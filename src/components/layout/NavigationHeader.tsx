@@ -47,10 +47,11 @@ export const NavigationHeader: React.FC = () => {
               ? 'text-[#00524B] border-b-2 border-[#00524B] font-bold'
               : 'text-[#65716B] hover:text-[#00524B]'
           }`}
-          id="nav-tab-explorer"
+          id="nav-tab-explore"
         >
-          Explorer & Studio
+          Explore & Studio
         </button>
+
       </nav>
 
       {/* Trailing Actions */}

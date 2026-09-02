@@ -3,15 +3,40 @@
 import { create } from 'zustand';
 import { ActiveView, FigureTypeKey } from '../types';
 
+function getInitialView(): ActiveView {
+  if (typeof window === 'undefined') return 'home';
+  const path = window.location.pathname.toLowerCase();
+  if (path.startsWith('/explore') || path.startsWith('/app') || path.startsWith('/map') || path.startsWith('/studio')) {
+    return 'app';
+  }
+  return 'home';
+}
+
+function syncUrlWithView(view: ActiveView, replace = false) {
+  if (typeof window === 'undefined') return;
+  const currentPath = window.location.pathname.toLowerCase();
+  const targetPath = view === 'app' ? '/explore' : '/';
+
+  if (currentPath !== targetPath && !(view === 'app' && (currentPath === '/app' || currentPath === '/explore'))) {
+    if (replace) {
+      window.history.replaceState({ view }, '', targetPath);
+    } else {
+      window.history.pushState({ view }, '', targetPath);
+    }
+  }
+}
+
 interface ViewState {
   activeView: ActiveView;
-  setActiveView: (view: ActiveView) => void;
+  setActiveView: (view: ActiveView, syncHistory?: boolean) => void;
+  initUrlListener: () => () => void;
   isCmdkOpen: boolean;
   setCmdkOpen: (open: boolean) => void;
   toggleCmdk: () => void;
   isSidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebarCollapsed: () => void;
+
 
   // Home Page Micro-Playgrounds
   homePlayground: {
@@ -81,14 +106,45 @@ const SAMPLE_COPILOT_RESPONSES = [
 ];
 
 export const useViewStore = create<ViewState>((set) => ({
-  activeView: 'home',
-  setActiveView: (view) => set({ activeView: view }),
+  activeView: getInitialView(),
+  setActiveView: (view, syncHistory = true) => {
+    if (syncHistory) {
+      syncUrlWithView(view);
+    }
+    set({ activeView: view });
+    if (view === 'home' && typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  },
+  initUrlListener: () => {
+    if (typeof window === 'undefined') return () => {};
+
+    // Synchronize initial URL state
+    const initialView = getInitialView();
+    window.history.replaceState({ view: initialView }, '', window.location.pathname);
+
+    const handlePopState = () => {
+      const path = window.location.pathname.toLowerCase();
+      const nextView: ActiveView =
+        path.startsWith('/explore') ||
+        path.startsWith('/app') ||
+        path.startsWith('/map') ||
+        path.startsWith('/studio')
+          ? 'app'
+          : 'home';
+      set({ activeView: nextView });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  },
   isCmdkOpen: false,
   setCmdkOpen: (open) => set({ isCmdkOpen: open }),
   toggleCmdk: () => set((state) => ({ isCmdkOpen: !state.isCmdkOpen })),
   isSidebarCollapsed: false,
   setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
   toggleSidebarCollapsed: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
+
 
   homePlayground: {
     boundaryDemo: {

@@ -47,10 +47,22 @@ export function useAgentStream() {
   // ── 30-Minute Inactivity Idle Detector ─────────────────────────────────────
   useEffect(() => {
     const checkIdleStatus = () => {
-      if (uiLockState !== 'idle' || activeConversation.messages.length <= 1) return;
+      const conv = useAgentStore.getState().activeConversation;
+      const currentLock = useAgentStore.getState().uiLockState;
 
-      const lastActivity = activeConversation.lastActivityTimestamp
-        ? new Date(activeConversation.lastActivityTimestamp).getTime()
+      // Check if already marked as expired in messages
+      const lastMsg = conv.messages[conv.messages.length - 1];
+      if (lastMsg?.isGuardrail && lastMsg.guardrailType === 'inactivity_expired') {
+        if (currentLock !== 'session_expired') {
+          setUiLockState('session_expired');
+        }
+        return;
+      }
+
+      if (currentLock !== 'idle' || conv.messages.length <= 1) return;
+
+      const lastActivity = conv.lastActivityTimestamp
+        ? new Date(conv.lastActivityTimestamp).getTime()
         : 0;
 
       if (lastActivity > 0 && Date.now() - lastActivity > IDLE_TIMEOUT_MS) {
@@ -66,13 +78,8 @@ export function useAgentStream() {
     const interval = setInterval(checkIdleStatus, 30000);
     checkIdleStatus(); // Check on mount
     return () => clearInterval(interval);
-  }, [
-    activeConversation.lastActivityTimestamp,
-    activeConversation.messages.length,
-    uiLockState,
-    setUiLockState,
-    addGuardrailMessage,
-  ]);
+  }, [setUiLockState, addGuardrailMessage]);
+
 
   const cancelStream = useCallback(() => {
     if (abortControllerRef.current) {

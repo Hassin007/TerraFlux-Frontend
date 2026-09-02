@@ -257,9 +257,17 @@ export const useAgentStore = create<AgentState>()(
       },
 
       addGuardrailMessage: (type, content) => {
+        const msgs = get().activeConversation.messages;
+        const lastMsg = msgs[msgs.length - 1];
+
+        // Guard against duplicate consecutive guardrail messages
+        if (lastMsg && lastMsg.isGuardrail && lastMsg.guardrailType === type) {
+          return;
+        }
+
         const nowIso = new Date().toISOString();
         const guardrailMsg: ChatMessage = {
-          id: `grd_${Date.now()}`,
+          id: `grd_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           role: 'system',
           content,
           isGuardrail: true,
@@ -269,11 +277,11 @@ export const useAgentStore = create<AgentState>()(
         set((s) => ({
           activeConversation: {
             ...s.activeConversation,
-            lastActivityTimestamp: nowIso,
             messages: [...s.activeConversation.messages, guardrailMsg],
           },
         }));
       },
+
 
       startNewConversation: (reason) => {
         const current = get().activeConversation;
@@ -328,6 +336,29 @@ export const useAgentStore = create<AgentState>()(
         dailyTokenLimit: state.dailyTokenLimit,
         dailyTokenResetAt: state.dailyTokenResetAt,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (!state?.activeConversation?.messages) return;
+        // Deduplicate consecutive identical guardrail messages from storage
+        const sanitized: ChatMessage[] = [];
+        for (const msg of state.activeConversation.messages) {
+          const prev = sanitized[sanitized.length - 1];
+          if (
+            msg.isGuardrail &&
+            prev?.isGuardrail &&
+            msg.guardrailType === prev.guardrailType
+          ) {
+            continue;
+          }
+          sanitized.push(msg);
+        }
+        state.activeConversation.messages = sanitized;
+
+        const lastMsg = sanitized[sanitized.length - 1];
+        if (lastMsg?.isGuardrail && lastMsg.guardrailType === 'inactivity_expired') {
+          state.uiLockState = 'session_expired';
+        }
+      },
     }
   )
 );
+

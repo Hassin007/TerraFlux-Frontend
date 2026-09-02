@@ -10,12 +10,19 @@ import { HomeLandingPage } from './components/home/HomeLandingPage';
 import { AppWorkspaceView } from './components/app/AppWorkspaceView';
 
 export default function App() {
-  const { activeView, setCmdkOpen, isCmdkOpen } = useViewStore();
+  const { activeView, setCmdkOpen, isCmdkOpen, initUrlListener } = useViewStore();
   const { togglePopover } = useAgentStore();
   const { closeStudio, isStudioOpen } = useStudioStore();
 
+  // Initialize browser URL & Popstate navigation listener
+  useEffect(() => {
+    const cleanup = initUrlListener();
+    return cleanup;
+  }, [initUrlListener]);
+
   // Global Keyboard Shortcuts (Ctrl+K, Esc, Ctrl+/)
   useEffect(() => {
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl+K / Cmd+K -> Command Palette
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
