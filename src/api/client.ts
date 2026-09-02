@@ -1,6 +1,19 @@
 // ── TerraFlux Base API Client & HTTP Transport ─────────────────────────────
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+const resolveApiBase = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  // In production, default to relative origin (for reverse proxies / same-origin deployments)
+  if (import.meta.env.PROD) {
+    return '';
+  }
+  // In local development, fallback to local backend port
+  return 'http://localhost:8000';
+};
+
+const API_BASE = resolveApiBase();
 
 export class ApiError extends Error {
   status: number;

@@ -1,20 +1,48 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# TerraFlux Frontend WebGIS Application
 
-# Run and deploy your AI Studio app
+Interactive Geospatial & Planetary Climate Analysis Platform built with React 19, Vite, TailwindCSS, and MapLibre GL.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/e1b92f8b-9a65-41e3-a643-4b9de7947599
+## 🚀 Local Development
 
-## Run Locally
+**Prerequisites:** Node.js 18+
 
-**Prerequisites:**  Node.js
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
+2. **Configure Environment:**
+   Copy `.env.example` to `.env`:
+   ```bash
+   VITE_API_BASE_URL=http://localhost:8000
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+3. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+   The app will run at `http://localhost:3000`.
+
+---
+
+## 🌐 Production Deployment (Vercel / Cloudflare Pages)
+
+### Deploying to Vercel (Recommended)
+
+1. **Import Git Repository:**
+   Connect your GitHub repository (`TerraFlux-Frontend`) in the [Vercel Dashboard](https://vercel.com).
+
+2. **Build Settings:**
+   - **Framework Preset:** `Vite`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+   - **Install Command:** `npm install`
+
+3. **Environment Variables:**
+   Add the following environment variable in Vercel Project Settings:
+   - `VITE_API_BASE_URL`: URL of your deployed backend (e.g. `https://api.terraflux.yourdomain.com`).
+
+4. **SPA Routing:**
+   `vercel.json` is pre-configured for instant client-side route rewrites (`/app`, `/home`) and optimal static asset caching.
