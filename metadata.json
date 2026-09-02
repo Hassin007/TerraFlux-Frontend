@@ -1,0 +1,6 @@
+{
+  "name": "TerraFlux",
+  "description": "Research-grade geospatial intelligence, meteorological analytics, cartographic WebGIS & AI climate copilot platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

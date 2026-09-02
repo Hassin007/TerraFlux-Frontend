@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-canvas: #F5F6F2;
+    --surface-card: #FFFFFF;
+    --surface-hover: #EEF1EB;
+    --border-subtle: #DDE3DA;
+    --border-highlight: #176B63;
+    
+    --accent-teal: #176B63;
+    --accent-teal-hover: #135952;
+    --accent-teal-soft: rgba(23, 107, 99, 0.08);
+    
+    --accent-moss: #426748;
+    --accent-moss-soft: rgba(66, 103, 72, 0.1);
+    
+    --accent-glacier: #4D8FA8;
+    --accent-glacier-soft: rgba(77, 143, 168, 0.12);
+    
+    --text-primary: #141E1A;
+    --text-secondary: #65716B;
+    --text-muted: #89938D;
+    --text-ochre: #B9822B;
+    --text-rust: #B94A48;
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .font-headline {
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+  
+  .font-mono-data {
+    font-family: 'JetBrains Mono', monospace;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #DDE3DA;
+}
+
+.hero-gradient {
+  background: radial-gradient(circle at 50% 50%, rgba(23, 107, 99, 0.05) 0%, rgba(245, 246, 242, 0) 70%);
+}
+
+/* Floating animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Typewriter cursor effect */
+.typewriter-text {
+  overflow: hidden;
+  border-right: .15em solid #176B63;
+  white-space: pre-wrap;
+}
+
+.fade-in { 
+  animation: fadeIn 0.4s ease-in forwards; 
+}
+
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(5px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+.fade-out { 
+  animation: fadeOut 0.3s ease-out forwards; 
+}
+
+@keyframes fadeOut { 
+  from { opacity: 1; } 
+  to { opacity: 0; } 
+}
+
+/* Custom slim scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F6F2;
+}
+::-webkit-scrollbar-thumb {
+  background: #DDE3DA;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #176B63;
+}
+
+/* KaTeX custom styling */
+.katex-display {
+  margin: 0.5em 0 !important;
+  padding: 0.5em 0.8em;
+  background: #F5F6F2;
+  color: #17211D;
+  border-radius: 8px;
+  border-left: 3px solid #176B63;
+  overflow-x: auto;
+}
