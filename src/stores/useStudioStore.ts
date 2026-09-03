@@ -164,7 +164,12 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       vmax = bounds.max;
     }
 
-    const hasLiveGrid = climateState.gridResult.points && climateState.gridResult.points.length >= 3;
+    // Only reuse live map grid if points exist and match the currently selected variable
+    const hasLiveGrid = Boolean(
+      climateState.gridResult.points &&
+      climateState.gridResult.points.length >= 3 &&
+      climateState.gridResult.variable === curVar
+    );
 
     const newMapRequest: FigureRequest = {
       ...get().saveMapRequest,
@@ -182,7 +187,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       end_year: isNaN(eYear) ? 2025 : eYear,
       start_date: climateState.startDate,
       end_date: climateState.endDate,
-      grid_size: climateState.gridSize || 8,
+      grid_size: hasLiveGrid ? (climateState.gridSize || 6) : 5,
       vis_min: vmin,
       vis_max: vmax,
       rainfall_scale_mode: climateState.rainfallScaleMode,
@@ -192,6 +197,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
 
     set({ isSaveMapOpen: true, isStudioOpen: false, saveMapRequest: newMapRequest });
     await get().fetchSaveMapPreview();
+
   },
 
   closeSaveMapModal: () => set({ isSaveMapOpen: false }),

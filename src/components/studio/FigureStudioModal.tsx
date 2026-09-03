@@ -9,11 +9,18 @@ import { ExportActionToolbar } from './ExportActionToolbar';
 import { BarChart3, X } from 'lucide-react';
 
 export const FigureStudioModal: React.FC = () => {
-  const { isStudioOpen, closeStudio } = useStudioStore();
+  const { isStudioOpen, closeStudio, request } = useStudioStore();
   const { selectedRegion, activeRegion } = useMapStore();
   const region = selectedRegion || activeRegion;
 
   if (!isStudioOpen) return null;
+
+  const regionLabel = region
+    ? (region.short_name || region.display_name || '').split(',')[0].trim()
+    : (request.region_name || 'Pakistan');
+  const lat = region ? region.lat : (request.latitude ?? 30.38);
+  const lon = region ? region.lon : (request.longitude ?? 69.35);
+
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6 bg-[#17211D]/40 backdrop-blur-sm animate-in fade-in duration-200">
@@ -35,7 +42,7 @@ export const FigureStudioModal: React.FC = () => {
                 </span>
               </h2>
               <p className="text-[10px] font-mono-data text-[#65716B]">
-                {region.display_name || region.short_name} ({region.lat.toFixed(2)}°N, {region.lon.toFixed(2)}°E)
+                {regionLabel} ({typeof lat === 'number' ? lat.toFixed(2) : lat}°N, {typeof lon === 'number' ? lon.toFixed(2) : lon}°E)
               </p>
             </div>
           </div>
@@ -63,3 +70,5 @@ export const FigureStudioModal: React.FC = () => {
     </div>
   );
 };
+
+
