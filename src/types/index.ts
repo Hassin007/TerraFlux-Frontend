@@ -1,6 +1,6 @@
 // ── TerraFlux TypeScript Domain Contracts ────────────────────────────────────
 
-export type ActiveView = 'home' | 'app';
+export type ActiveView = 'home' | 'app' | 'guide';
 
 export type AdminLevel = 0 | 1 | 2 | 3;
 

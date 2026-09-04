@@ -6,6 +6,9 @@ import { ActiveView, FigureTypeKey } from '../types';
 function getInitialView(): ActiveView {
   if (typeof window === 'undefined') return 'home';
   const path = window.location.pathname.toLowerCase();
+  if (path.startsWith('/guide') || path.startsWith('/faq') || path.startsWith('/docs')) {
+    return 'guide';
+  }
   if (path.startsWith('/explore') || path.startsWith('/app') || path.startsWith('/map') || path.startsWith('/studio')) {
     return 'app';
   }
@@ -15,9 +18,13 @@ function getInitialView(): ActiveView {
 function syncUrlWithView(view: ActiveView, replace = false) {
   if (typeof window === 'undefined') return;
   const currentPath = window.location.pathname.toLowerCase();
-  const targetPath = view === 'app' ? '/explore' : '/';
+  const targetPath = view === 'app' ? '/explore' : view === 'guide' ? '/guide' : '/';
 
-  if (currentPath !== targetPath && !(view === 'app' && (currentPath === '/app' || currentPath === '/explore'))) {
+  if (
+    currentPath !== targetPath &&
+    !(view === 'app' && (currentPath === '/app' || currentPath === '/explore')) &&
+    !(view === 'guide' && (currentPath === '/guide' || currentPath === '/faq'))
+  ) {
     if (replace) {
       window.history.replaceState({ view }, '', targetPath);
     } else {
@@ -112,7 +119,7 @@ export const useViewStore = create<ViewState>((set) => ({
       syncUrlWithView(view);
     }
     set({ activeView: view });
-    if (view === 'home' && typeof window !== 'undefined') {
+    if ((view === 'home' || view === 'guide') && typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   },
@@ -125,13 +132,17 @@ export const useViewStore = create<ViewState>((set) => ({
 
     const handlePopState = () => {
       const path = window.location.pathname.toLowerCase();
-      const nextView: ActiveView =
+      let nextView: ActiveView = 'home';
+      if (path.startsWith('/guide') || path.startsWith('/faq') || path.startsWith('/docs')) {
+        nextView = 'guide';
+      } else if (
         path.startsWith('/explore') ||
         path.startsWith('/app') ||
         path.startsWith('/map') ||
         path.startsWith('/studio')
-          ? 'app'
-          : 'home';
+      ) {
+        nextView = 'app';
+      }
       set({ activeView: nextView });
     };
 

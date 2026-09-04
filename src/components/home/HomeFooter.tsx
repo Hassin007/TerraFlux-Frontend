@@ -22,6 +22,28 @@ export const HomeFooter: React.FC = () => {
           <span>TerraFlux</span>
         </div>
 
+        {/* Navigation Quick Links */}
+        <div className="flex items-center gap-6 text-xs font-mono-data text-[#65716B]">
+          <button
+            onClick={() => setActiveView('home')}
+            className="hover:text-[#00524B] transition-colors cursor-pointer uppercase tracking-wider"
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveView('app')}
+            className="hover:text-[#00524B] transition-colors cursor-pointer uppercase tracking-wider"
+          >
+            Explore & Studio
+          </button>
+          <button
+            onClick={() => setActiveView('guide')}
+            className="hover:text-[#00524B] transition-colors cursor-pointer uppercase tracking-wider font-semibold text-[#00524B]"
+          >
+            Guide & FAQ
+          </button>
+        </div>
+
         {/* Copyright Notice */}
         <div className="text-xs font-mono-data text-[#65716B] uppercase tracking-widest text-center sm:text-right">
           © 2024 Planetary Intelligence Systems

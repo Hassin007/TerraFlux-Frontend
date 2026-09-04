@@ -24,6 +24,7 @@ import {
   CornerDownLeft,
   Mountain,
   Loader2,
+  BookOpen,
 } from 'lucide-react';
 
 export const CommandPalette: React.FC = () => {
@@ -181,6 +182,40 @@ export const CommandPalette: React.FC = () => {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Quick Guide & Documentation */}
+          {(!query.trim() || /guide|faq|help|doc|start|tutorial|question|how/i.test(query)) && (
+            <div>
+              <p className="text-[11px] font-mono-data text-[#65716B] uppercase tracking-wider px-2 mb-1.5 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-[#00524B]" />
+                User Guide & Documentation
+              </p>
+              <button
+                onClick={() => {
+                  setActiveView('guide');
+                  setCmdkOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs text-[#17211D] bg-[#F5F6F2] hover:bg-[#176B63]/10 hover:border-[#176B63]/30 border border-[#DDE3DA] transition-all text-left cursor-pointer group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded bg-emerald-50 text-[#00524B] flex items-center justify-center border border-emerald-200 shrink-0">
+                    <BookOpen className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="font-semibold group-hover:text-[#00524B] transition-colors">
+                      Platform Guide & FAQ
+                    </span>
+                    <span className="text-[#89938D] ml-2 text-[11px]">
+                      Step-by-step walkthrough & common questions
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono-data text-[#00524B] group-hover:underline">
+                  /guide →
+                </span>
+              </button>
             </div>
           )}
 

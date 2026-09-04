@@ -51,7 +51,17 @@ export const NavigationHeader: React.FC = () => {
         >
           Explore & Studio
         </button>
-
+        <button
+          onClick={() => setActiveView('guide')}
+          className={`h-full flex items-center font-mono-data text-xs uppercase tracking-wider transition-colors cursor-pointer ${
+            activeView === 'guide'
+              ? 'text-[#00524B] border-b-2 border-[#00524B] font-bold'
+              : 'text-[#65716B] hover:text-[#00524B]'
+          }`}
+          id="nav-tab-guide"
+        >
+          Guide & FAQ
+        </button>
       </nav>
 
       {/* Trailing Actions */}

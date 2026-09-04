@@ -8,6 +8,7 @@ import { NavigationHeader } from './components/layout/NavigationHeader';
 import { CommandPalette } from './components/layout/CommandPalette';
 import { HomeLandingPage } from './components/home/HomeLandingPage';
 import { AppWorkspaceView } from './components/app/AppWorkspaceView';
+import { GuideFaqView } from './components/guide/GuideFaqView';
 
 export default function App() {
   const { activeView, setCmdkOpen, isCmdkOpen, initUrlListener } = useViewStore();
@@ -67,7 +68,13 @@ export default function App() {
           isAppView ? 'h-full overflow-hidden flex flex-col' : 'min-h-screen'
         }`}
       >
-        {activeView === 'home' ? <HomeLandingPage /> : <AppWorkspaceView />}
+        {activeView === 'home' ? (
+          <HomeLandingPage />
+        ) : activeView === 'guide' ? (
+          <GuideFaqView />
+        ) : (
+          <AppWorkspaceView />
+        )}
       </main>
     </div>
   );
