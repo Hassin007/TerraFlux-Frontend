@@ -24,7 +24,6 @@ export const StudioPreviewCanvas: React.FC = () => {
         </div>
 
         <div className="text-[11px] text-[#65716B] font-semibold">
-          Scientific Matplotlib Engine
         </div>
       </div>
 
@@ -34,7 +33,6 @@ export const StudioPreviewCanvas: React.FC = () => {
           <div className="absolute inset-0 z-20 bg-white/75 backdrop-blur-xs flex flex-col items-center justify-center gap-2.5 animate-in fade-in duration-150">
             <Loader2 className="w-7 h-7 text-[#176B63] animate-spin" />
             <span className="text-xs font-mono-data font-bold text-[#17211D]">
-              Rendering scientific visual...
             </span>
           </div>
         )}
@@ -59,7 +57,7 @@ export const StudioPreviewCanvas: React.FC = () => {
 
       {/* Footer Info */}
       <div className="flex items-center justify-between text-[11px] font-mono-data text-[#65716B] pt-1">
-        <span>Engine: Matplotlib Scientific Backend</span>
+        <span></span>
         <span>Ready for 300 / 600 DPI Export</span>
       </div>
     </div>

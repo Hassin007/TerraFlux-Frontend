@@ -111,7 +111,6 @@ export const SaveMapModal: React.FC = () => {
                 </span>
               </h2>
               <p className="text-[10px] font-mono-data text-[#65716B]">
-                Publication-Grade Spatial Cartographic Figure
               </p>
             </div>
           </div>
@@ -341,11 +340,7 @@ export const SaveMapModal: React.FC = () => {
               <div className="flex items-center gap-2 text-[#17211D]">
                 <span className="w-2 h-2 rounded-full bg-[#176B63]" />
                 <span className="font-bold">{saveMapRequest.region_name}</span>
-                <span className="text-[#65716B]">[{saveMapRequest.preset} Map Layout]</span>
               </div>
-              <span className="text-[11px] text-[#65716B] font-semibold">
-                Matplotlib Spatial Cartography Engine
-              </span>
             </div>
 
             <div className="flex-1 w-full min-h-[380px] my-2 rounded-xl overflow-hidden relative bg-[#F8F9F6] border border-[#DDE3DA] flex items-center justify-center p-3">
