@@ -226,21 +226,23 @@ export function useAgentStream() {
                 // Handle interactive map dispatch action
                 if (event.map_action && event.map_action.action === 'render_interactive_map') {
                   const mapAct = event.map_action;
+                  const cc3 = (mapAct.country_code_3 || mapAct.country_code || '').trim() || 'WLD';
+                  const cc2 = (mapAct.country_code_2 || (cc3.length === 2 ? cc3 : cc3 !== 'WLD' ? cc3.slice(0, 2) : '')).trim();
                   const candidate: RegionCandidate = {
                     display_name: mapAct.display_name || mapAct.region_name,
                     short_name: mapAct.region_name,
                     lat: mapAct.lat ?? 30.0,
                     lon: mapAct.lon ?? 70.0,
-                    osm_type: mapAct.osm_type != null ? String(mapAct.osm_type) : '',
-                    osm_id: mapAct.osm_id != null ? String(mapAct.osm_id) : '',
+                    osm_type: mapAct.osm_type ? String(mapAct.osm_type) : '',
+                    osm_id: mapAct.osm_id ? String(mapAct.osm_id) : '',
                     type: 'administrative',
                     category: 'boundary',
-                    country: mapAct.country_code || '',
-                    country_code_2: mapAct.country_code?.slice(0, 2) || 'PK',
-                    country_code_3: mapAct.country_code || 'WLD',
+                    country: cc3 !== 'WLD' ? cc3 : (mapAct.country || ''),
+                    country_code_2: cc2,
+                    country_code_3: cc3,
                     admin_level_hint: (mapAct.admin_level as any) ?? 1,
                     importance: 1,
-                    parent_chain: [],
+                    parent_chain: Array.isArray(mapAct.parent_chain) ? mapAct.parent_chain : [],
                     bbox: mapAct.bbox,
                   };
 

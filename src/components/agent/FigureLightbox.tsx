@@ -28,17 +28,40 @@ export const FigureLightbox: React.FC = () => {
       : `${API_BASE}${(lightboxFigure.url || '').startsWith('/') ? '' : '/'}${lightboxFigure.url}`
     : '';
 
-  const handleDownload = () => {
-    if (isRealUrl && !hasError && imgUrl) {
-      const link = document.createElement('a');
-      link.href = imgUrl;
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!isRealUrl || hasError || !imgUrl || isDownloading) return;
+    setIsDownloading(true);
+
+    try {
+      const res = await fetch(imgUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
       const ext = lightboxFigure.format || 'png';
       const cleanRegion = (lightboxFigure.region_name || 'Region').replace(/[^a-zA-Z0-9]/g, '_');
-      link.download = `TerraFlux_${cleanRegion}_${lightboxFigure.figure_type || 'figure'}.${ext}`;
-      link.target = '_blank';
+      const filename = `TerraFlux_${cleanRegion}_${lightboxFigure.figure_type || 'figure'}.${ext}`;
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('[Lightbox] Download error:', err);
+      // Fallback
+      const link = document.createElement('a');
+      link.href = imgUrl;
+      link.download = `TerraFlux_${(lightboxFigure.region_name || 'Region').replace(/[^a-zA-Z0-9]/g, '_')}.${lightboxFigure.format || 'png'}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -135,15 +158,19 @@ export const FigureLightbox: React.FC = () => {
           <span className="text-[#65716B]">Publication-Grade Climate Figure</span>
           <button
             onClick={handleDownload}
-            disabled={!isRealUrl || hasError}
+            disabled={!isRealUrl || hasError || isDownloading}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold transition-all shadow-xs ${
-              !isRealUrl || hasError
+              !isRealUrl || hasError || isDownloading
                 ? 'bg-[#DDE3DA] text-[#65716B] cursor-not-allowed opacity-60'
                 : 'bg-[#176B63] hover:bg-[#135952] text-white cursor-pointer'
             }`}
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download High-Res</span>
+            {isDownloading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            <span>{isDownloading ? 'Downloading...' : 'Download High-Res'}</span>
           </button>
         </div>
       </div>

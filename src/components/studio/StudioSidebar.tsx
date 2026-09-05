@@ -216,7 +216,7 @@ export const StudioSidebar: React.FC = () => {
       {/* Refresh Button */}
       <button
         onClick={() => fetchPreview()}
-        disabled={isLoadingPreview || isUnsupportedMultiDecadal}
+        disabled={isLoadingPreview || isUnsupportedMultiDecadal || !request.region_name}
         className="w-full mt-4 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-white hover:bg-[#DDE3DA]/50 text-[#17211D] font-bold border border-[#DDE3DA] shadow-xs transition-all cursor-pointer disabled:opacity-50"
       >
         <RotateCw className={`w-3.5 h-3.5 text-[#176B63] ${isLoadingPreview ? 'animate-spin' : ''}`} />

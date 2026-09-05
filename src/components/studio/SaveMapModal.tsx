@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useStudioStore } from '../../stores/useStudioStore';
 import { useClimateStore, computeRainfallBounds } from '../../stores/useClimateStore';
+import { useViewStore } from '../../stores/useViewStore';
 import { exportFigure } from '../../api/figureApi';
 import { PRESET_OPTIONS } from './PresetSelectorGrid';
 import { RainfallScaleMode } from '../../types';
@@ -21,6 +22,8 @@ import {
   SlidersHorizontal,
   Sliders,
   Check,
+  MapPin,
+  Search,
 } from 'lucide-react';
 
 export const THEME_OPTIONS = [
@@ -67,6 +70,8 @@ export const SaveMapModal: React.FC = () => {
 
   if (!isSaveMapOpen) return null;
 
+  const hasRegion = Boolean(saveMapRequest.region_name && saveMapRequest.region_name.trim());
+
   const imgSrc = saveMapPreviewBase64
     ? saveMapPreviewBase64.startsWith('data:')
       ? saveMapPreviewBase64
@@ -74,6 +79,7 @@ export const SaveMapModal: React.FC = () => {
     : null;
 
   const handleDownload = async (fmt: 'png' | 'svg' | 'pdf') => {
+    if (!hasRegion) return;
     setIsExporting(true);
     try {
       const filename = await exportFigure({
@@ -107,10 +113,11 @@ export const SaveMapModal: React.FC = () => {
               <h2 className="font-display font-bold text-sm tracking-wide text-[#17211D] flex items-center gap-2">
                 SAVE MAP STUDIO
                 <span className="text-[10px] font-mono-data px-2 py-0.5 rounded bg-white text-[#176B63] font-bold border border-[#DDE3DA]">
-                  {saveMapRequest.region_name}
+                  {hasRegion ? saveMapRequest.region_name : 'NO LOCATION'}
                 </span>
               </h2>
               <p className="text-[10px] font-mono-data text-[#65716B]">
+                {hasRegion ? 'High-Resolution Spatial Figure' : 'Awaiting location selection on interactive map'}
               </p>
             </div>
           </div>
@@ -322,7 +329,7 @@ export const SaveMapModal: React.FC = () => {
             {/* Refresh Map Button */}
             <button
               onClick={() => fetchSaveMapPreview()}
-              disabled={isLoadingSaveMapPreview}
+              disabled={isLoadingSaveMapPreview || !hasRegion}
               className="w-full mt-4 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-white hover:bg-[#DDE3DA]/50 text-[#17211D] font-bold border border-[#DDE3DA] shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               <RotateCw
@@ -338,22 +345,34 @@ export const SaveMapModal: React.FC = () => {
           <div className="relative flex-1 h-full bg-white p-4 sm:p-6 flex flex-col justify-between overflow-hidden">
             <div className="flex items-center justify-between pb-3 border-b border-[#DDE3DA] text-xs font-mono-data">
               <div className="flex items-center gap-2 text-[#17211D]">
-                <span className="w-2 h-2 rounded-full bg-[#176B63]" />
-                <span className="font-bold">{saveMapRequest.region_name}</span>
+                <span className={`w-2 h-2 rounded-full ${hasRegion ? 'bg-[#176B63]' : 'bg-[#89938D]'}`} />
+                <span className="font-bold">{hasRegion ? saveMapRequest.region_name : 'No Region Selected'}</span>
               </div>
             </div>
 
             <div className="flex-1 w-full min-h-[380px] my-2 rounded-xl overflow-hidden relative bg-[#F8F9F6] border border-[#DDE3DA] flex items-center justify-center p-3">
-              {isLoadingSaveMapPreview && (
+              {!hasRegion ? (
+                <div className="text-center p-6 sm:p-8 space-y-3.5 max-w-md animate-in fade-in duration-200">
+                  <div className="w-12 h-12 rounded-2xl bg-[#176B63]/10 border border-[#176B63]/25 flex items-center justify-center text-[#176B63] mx-auto shadow-xs">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-display font-bold text-sm text-[#17211D]">
+                      No Map Location Active
+                    </h3>
+                    <p className="text-xs text-[#65716B] leading-relaxed">
+                      Select or search a region on the interactive map to configure and export high-resolution cartographic map figures.
+                    </p>
+                  </div>
+                </div>
+              ) : isLoadingSaveMapPreview ? (
                 <div className="absolute inset-0 z-20 bg-white/75 backdrop-blur-xs flex flex-col items-center justify-center gap-2.5 animate-in fade-in duration-150">
                   <Loader2 className="w-7 h-7 text-[#176B63] animate-spin" />
                   <span className="text-xs font-mono-data font-bold text-[#17211D]">
                     Rendering publication map...
                   </span>
                 </div>
-              )}
-
-              {imgSrc ? (
+              ) : imgSrc ? (
                 <img
                   src={imgSrc}
                   alt="Spatial Map Preview"
@@ -390,7 +409,7 @@ export const SaveMapModal: React.FC = () => {
 
             <button
               onClick={() => handleDownload('png')}
-              disabled={isExporting}
+              disabled={isExporting || !hasRegion}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#176B63] hover:bg-[#135952] text-white font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
             >
               {isExporting ? (
@@ -403,7 +422,7 @@ export const SaveMapModal: React.FC = () => {
 
             <button
               onClick={() => handleDownload('svg')}
-              disabled={isExporting}
+              disabled={isExporting || !hasRegion}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-[#DDE3DA]/40 text-[#17211D] font-bold border border-[#DDE3DA] transition-all cursor-pointer shadow-xs disabled:opacity-50"
             >
               <FileCode className="w-3.5 h-3.5 text-[#176B63]" />
@@ -412,7 +431,7 @@ export const SaveMapModal: React.FC = () => {
 
             <button
               onClick={() => handleDownload('pdf')}
-              disabled={isExporting}
+              disabled={isExporting || !hasRegion}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#00524B] hover:bg-[#003d38] text-white font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
             >
               <FileText className="w-3.5 h-3.5 text-white" />

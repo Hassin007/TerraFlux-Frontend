@@ -51,8 +51,8 @@ interface StudioState {
 
 const defaultChartRequest: FigureRequest = {
   figure_type: 'anomaly',
-  region_name: 'Pakistan',
-  country_code: 'PAK',
+  region_name: '',
+  country_code: '',
   admin_level: 0,
   variable: 'temperature_2m_mean',
   start_year: 1980,
@@ -66,8 +66,8 @@ const defaultChartRequest: FigureRequest = {
 
 const defaultSaveMapRequest: FigureRequest = {
   figure_type: 'spatial_map',
-  region_name: 'Pakistan',
-  country_code: 'PAK',
+  region_name: '',
+  country_code: '',
   admin_level: 0,
   variable: 'temperature_2m_mean',
   start_year: 1980,
@@ -102,10 +102,28 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     const climateState = useClimateStore.getState();
     const region = mapState.selectedRegion || mapState.activeRegion;
 
-    const locName = region ? (region.short_name || (region.display_name || '').split(',')[0].trim()) : 'Pakistan';
-    const cc = region ? (region.country_code_3 || region.country_code_2 || 'PAK') : 'PAK';
-    const admLevel = region ? (region.admin_level_hint ?? 0) : 0;
-    const curVar = climateState.selectedVariable || 'temperature_2m_mean';
+    if (!region && !overrides?.region_name) {
+      set({
+        isStudioOpen: true,
+        isSaveMapOpen: false,
+        previewBase64: null,
+        previewError: null,
+        isLoadingPreview: false,
+        request: {
+          ...get().request,
+          region_name: '',
+          figure_type: (overrides?.figure_type as string) || 'anomaly',
+          variable: climateState.selectedVariable || 'temperature_2m_mean',
+          ...(overrides || {}),
+        },
+      });
+      return;
+    }
+
+    const locName = (overrides?.region_name as string) || (region ? (region.short_name || (region.display_name || '').split(',')[0].trim()) : '');
+    const cc = (overrides?.country_code as string) || (region ? (region.country_code_3 || region.country_code_2 || 'WLD') : 'WLD');
+    const admLevel = overrides?.admin_level !== undefined ? (overrides.admin_level as number) : (region ? (region.admin_level_hint ?? 0) : 0);
+    const curVar = overrides?.variable || climateState.selectedVariable || 'temperature_2m_mean';
 
     const sYear = climateState.startDate ? parseInt(climateState.startDate.split('-')[0]) : 1980;
     const eYear = climateState.endDate ? parseInt(climateState.endDate.split('-')[0]) : 2025;
@@ -116,11 +134,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       region_name: locName,
       country_code: cc,
       admin_level: admLevel,
-      osm_id: region ? region.osm_id : null,
-      osm_type: region ? region.osm_type : null,
+      osm_id: region ? (region.osm_id || null) : null,
+      osm_type: region ? (region.osm_type || null) : null,
       parent_chain: region ? (region.parent_chain || []) : [],
-      latitude: region ? region.lat : 30.3753,
-      longitude: region ? region.lon : 69.3451,
+      latitude: region ? region.lat : (overrides?.latitude ?? 0),
+      longitude: region ? region.lon : (overrides?.longitude ?? 0),
       variable: curVar,
       start_year: isNaN(sYear) ? 1980 : sYear,
       end_year: isNaN(eYear) ? 2025 : eYear,
@@ -140,10 +158,27 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     const climateState = useClimateStore.getState();
     const region = mapState.selectedRegion || mapState.activeRegion;
 
-    const locName = region ? (region.short_name || (region.display_name || '').split(',')[0].trim()) : 'Pakistan';
-    const cc = region ? (region.country_code_3 || region.country_code_2 || 'PAK') : 'PAK';
-    const admLevel = region ? (region.admin_level_hint ?? 0) : 0;
-    const curVar = climateState.selectedVariable || 'temperature_2m_mean';
+    if (!region && !overrides?.region_name) {
+      set({
+        isSaveMapOpen: true,
+        isStudioOpen: false,
+        saveMapPreviewBase64: null,
+        saveMapPreviewError: null,
+        isLoadingSaveMapPreview: false,
+        saveMapRequest: {
+          ...get().saveMapRequest,
+          region_name: '',
+          variable: climateState.selectedVariable || 'temperature_2m_mean',
+          ...(overrides || {}),
+        },
+      });
+      return;
+    }
+
+    const locName = (overrides?.region_name as string) || (region ? (region.short_name || (region.display_name || '').split(',')[0].trim()) : '');
+    const cc = (overrides?.country_code as string) || (region ? (region.country_code_3 || region.country_code_2 || 'WLD') : 'WLD');
+    const admLevel = overrides?.admin_level !== undefined ? (overrides.admin_level as number) : (region ? (region.admin_level_hint ?? 0) : 0);
+    const curVar = overrides?.variable || climateState.selectedVariable || 'temperature_2m_mean';
 
     const sYear = climateState.startDate ? parseInt(climateState.startDate.split('-')[0]) : 1980;
     const eYear = climateState.endDate ? parseInt(climateState.endDate.split('-')[0]) : 2025;
@@ -164,7 +199,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       vmax = bounds.max;
     }
 
-    // Only reuse live map grid if points exist and match the currently selected variable
+    // Reuse live map grid if points exist and match the currently selected variable
     const hasLiveGrid = Boolean(
       climateState.gridResult.points &&
       climateState.gridResult.points.length >= 3 &&
@@ -177,11 +212,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       region_name: locName,
       country_code: cc,
       admin_level: admLevel,
-      osm_id: region ? region.osm_id : null,
-      osm_type: region ? region.osm_type : null,
+      osm_id: region ? (region.osm_id || null) : null,
+      osm_type: region ? (region.osm_type || null) : null,
       parent_chain: region ? (region.parent_chain || []) : [],
-      latitude: region ? region.lat : 30.3753,
-      longitude: region ? region.lon : 69.3451,
+      latitude: region ? region.lat : (overrides?.latitude ?? 0),
+      longitude: region ? region.lon : (overrides?.longitude ?? 0),
       variable: curVar,
       start_year: isNaN(sYear) ? 1980 : sYear,
       end_year: isNaN(eYear) ? 2025 : eYear,
@@ -197,7 +232,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
 
     set({ isSaveMapOpen: true, isStudioOpen: false, saveMapRequest: newMapRequest });
     await get().fetchSaveMapPreview();
-
   },
 
   closeSaveMapModal: () => set({ isSaveMapOpen: false }),
@@ -215,6 +249,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     clearTimeout(previewDebounceTimer);
     previewDebounceTimer = setTimeout(async () => {
       const req = get().request;
+      if (!req.region_name || req.region_name.trim() === '') {
+        set({ isLoadingPreview: false, previewBase64: null, previewError: null });
+        return;
+      }
+
       set({ isLoadingPreview: true, previewError: null });
 
       try {
@@ -241,6 +280,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     clearTimeout(saveMapPreviewDebounceTimer);
     saveMapPreviewDebounceTimer = setTimeout(async () => {
       const req = get().saveMapRequest;
+      if (!req.region_name || req.region_name.trim() === '') {
+        set({ isLoadingSaveMapPreview: false, saveMapPreviewBase64: null, saveMapPreviewError: null });
+        return;
+      }
+
       set({ isLoadingSaveMapPreview: true, saveMapPreviewError: null });
 
       try {

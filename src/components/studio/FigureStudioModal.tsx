@@ -17,9 +17,10 @@ export const FigureStudioModal: React.FC = () => {
 
   const regionLabel = region
     ? (region.short_name || region.display_name || '').split(',')[0].trim()
-    : (request.region_name || 'Pakistan');
-  const lat = region ? region.lat : (request.latitude ?? 30.38);
-  const lon = region ? region.lon : (request.longitude ?? 69.35);
+    : (request.region_name || '');
+  const hasRegion = Boolean(regionLabel);
+  const lat = region ? region.lat : (request.latitude ?? null);
+  const lon = region ? region.lon : (request.longitude ?? null);
 
 
   return (
@@ -42,7 +43,9 @@ export const FigureStudioModal: React.FC = () => {
                 </span>
               </h2>
               <p className="text-[10px] font-mono-data text-[#65716B]">
-                {regionLabel} ({typeof lat === 'number' ? lat.toFixed(2) : lat}°N, {typeof lon === 'number' ? lon.toFixed(2) : lon}°E)
+                {hasRegion
+                  ? `${regionLabel} (${typeof lat === 'number' ? lat.toFixed(2) : ''}°N, ${typeof lon === 'number' ? lon.toFixed(2) : ''}°E)`
+                  : 'No active location selected on map'}
               </p>
             </div>
           </div>

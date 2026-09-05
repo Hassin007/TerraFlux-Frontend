@@ -29,6 +29,8 @@ export const ExportActionToolbar: React.FC = () => {
     }
   };
 
+  const hasRegion = Boolean(request.region_name && request.region_name.trim());
+
   return (
     <div className="p-3.5 sm:p-4 bg-[#F5F6F2] border-t border-[#DDE3DA] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono-data">
       {/* Export Buttons */}
@@ -39,7 +41,7 @@ export const ExportActionToolbar: React.FC = () => {
 
         <button
           onClick={() => handleExport('png')}
-          disabled={isExporting}
+          disabled={isExporting || !hasRegion}
           className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-[#DDE3DA]/40 text-[#17211D] font-bold border border-[#DDE3DA] transition-all cursor-pointer shadow-xs disabled:opacity-50"
         >
           {isExporting ? (
@@ -52,7 +54,7 @@ export const ExportActionToolbar: React.FC = () => {
 
         <button
           onClick={() => handleExport('pdf')}
-          disabled={isExporting}
+          disabled={isExporting || !hasRegion}
           className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#176B63] hover:bg-[#135952] text-white font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
         >
           {isExporting ? (
