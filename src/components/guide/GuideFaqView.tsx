@@ -28,7 +28,7 @@ import {
 
 interface FaqItem {
   id: string;
-  category: 'data' | 'ai' | 'maps' | 'charts' | 'performance';
+  category: 'data' | 'ai' | 'forecast' | 'maps' | 'charts' | 'performance';
   question: string;
   answer: string;
   badge?: string;
@@ -67,7 +67,7 @@ const FAQ_ITEMS: FaqItem[] = [
       'Atmospheric records are continuously refreshed so you can analyze recent heatwaves, droughts, and seasonal shifts alongside multi-decade historical trends.',
   },
 
-  // ── AI Climate Assistant ─────────────────────────────────────────────────────
+  // ── AI Climate Assistant & Weather Forecasting ──────────────────────────────
   {
     id: 'ai-accuracy',
     category: 'ai',
@@ -96,6 +96,47 @@ const FAQ_ITEMS: FaqItem[] = [
     question: 'Can I see how the Assistant reached its answer?',
     answer:
       'Yes. Each Assistant response includes an interactive step-by-step reasoning panel. You can expand it to see the exact region boundary resolved, the climate variables queried, and the mathematical formulas applied.',
+  },
+  {
+    id: 'slash-commands',
+    category: 'ai',
+    question: 'What slash commands can I use in the chat?',
+    answer:
+      'TerraFlux Copilot supports fast slash commands:\n• /forecast <location> [days]: Instantly retrieves high-resolution live weather, 7-day outlooks, and 24h hourly timelines (e.g., "/forecast Karachi 7d" or "/forecast London").\n• /map <location> <variable> <reducer> <dates>: Renders a live 3D WebGIS interactive climate layer (e.g., "/map Karachi precipitation mean 2021-2025").\nYou can type "/" in the chat input to open the interactive command palette.',
+    badge: 'Slash Palette',
+  },
+
+  // ── Weather Prediction & Forecasting ─────────────────────────────────────────
+  {
+    id: 'forecast-overview',
+    category: 'forecast',
+    question: 'How does the Weather Prediction & 7-Day Forecasting feature work?',
+    answer:
+      'TerraFlux integrates with high-resolution global numerical weather prediction models from Open-Meteo. When you ask for a forecast or type /forecast, the platform retrieves real-time live conditions (temperature, humidity, wind, pressure, cloud cover), a 7-day daily outlook with min/max temperatures and precipitation probabilities, and an expandable 24-hour hourly curve.',
+    badge: 'Live & 7-Day',
+  },
+  {
+    id: 'forecast-natural-language',
+    category: 'forecast',
+    question: 'Can I ask for weather forecasts using regular conversation?',
+    answer:
+      'Yes! You can ask in natural language like:\n• "What is the weather forecast for Paris over the next 5 days?"\n• "Will it rain in Karachi tomorrow?"\n• "Show me the 7-day temperature outlook for Gilgit."\nThe assistant understands your query, identifies the location, and renders a rich meteorological forecast card.',
+  },
+  {
+    id: 'forecast-alerts',
+    category: 'forecast',
+    question: 'Does the system detect severe weather and extreme alerts?',
+    answer:
+      'Yes. The forecast engine automatically scans upcoming conditions for severe weather events:\n• Severe Heatwaves: Maximum temperatures ≥ 42°C\n• Heavy Precipitation: Daily rainfall ≥ 45 mm\n• Gale Force Winds: Wind gusts ≥ 60 km/h\n• Sub-Zero Freezing: Temperatures ≤ 0°C\nWhen detected, prominent alert banners appear at the top of the forecast card.',
+    badge: 'Early Warning',
+  },
+  {
+    id: 'forecast-vs-climate',
+    category: 'forecast',
+    question: 'How is weather forecasting different from historical climate analytics?',
+    answer:
+      '• Historical Climate Analytics (1980–Today): Explores 40+ years of ERA5 planetary reanalysis data to identify long-term decadal warming trends, multi-year droughts, and baseline anomalies.\n• Weather Forecasting (Today–14 Days): Projects forward-looking, near-term atmospheric dynamics using high-resolution meteorological models for operational planning.',
+    badge: 'Climate vs Weather',
   },
 
   // ── Maps & Cartography ───────────────────────────────────────────────────────
@@ -182,6 +223,7 @@ const CATEGORIES = [
   { key: 'all', label: 'All Questions' },
   { key: 'data', label: 'Data & Coverage' },
   { key: 'ai', label: 'AI Climate Assistant' },
+  { key: 'forecast', label: 'Weather Forecast' },
   { key: 'maps', label: 'Maps & Cartography' },
   { key: 'charts', label: 'Charts & Publishing' },
   { key: 'performance', label: 'Tips & Performance' },
@@ -410,41 +452,41 @@ export const GuideFaqView: React.FC = () => {
               <div className="flex-1 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-800 text-xs font-mono-data font-semibold border border-purple-200">
-                    Step 3: AI Climate Assistant
+                    Step 3: AI Assistant & Forecasting
                   </span>
                   <h3 className="text-lg sm:text-xl font-headline font-semibold text-[#141E1A]">
-                    Ask Questions in Plain Everyday English
+                    Ask Questions & Get Instant 7-Day Weather Forecasts
                   </h3>
                 </div>
 
                 <p className="text-sm text-[#4A5550] leading-relaxed">
-                  Click the <strong>Assistant</strong> button in the top navigation or press <kbd className="px-1.5 py-0.5 text-xs bg-[#F5F6F2] border border-[#DDE3DA] rounded font-mono-data text-[#141E1A]">Ctrl+/</kbd>. You do not need to know technical science formulas—type what you want to know just like you would ask a colleague:
+                  Click the <strong>Assistant</strong> button in the top navigation or press <kbd className="px-1.5 py-0.5 text-xs bg-[#F5F6F2] border border-[#DDE3DA] rounded font-mono-data text-[#141E1A]">Ctrl+/</kbd>. You can analyze 40-year climate records, generate scientific charts, or request forward-looking meteorological forecasts in plain English or via slash commands:
                 </p>
 
-                <div className="space-y-2 pt-1">
-                  <div className="p-3 rounded-xl bg-[#F5F6F2] border border-[#DDE3DA] flex items-center gap-2.5 text-xs">
-                    <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
-                    <span className="text-[#141E1A] font-medium font-sans">
-                      &ldquo;How hot was the summer of 2024 in Sindh compared to the 30-year normal?&rdquo;
-                    </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div className="p-3 rounded-xl bg-[#F5F6F2] border border-[#DDE3DA] space-y-1 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-[#141E1A]">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                      <span>Historical Climate Analytics</span>
+                    </div>
+                    <p className="text-[#65716B] font-sans">
+                      &ldquo;How hot was the summer of 2024 in Sindh compared to normal?&rdquo;
+                    </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#F5F6F2] border border-[#DDE3DA] flex items-center gap-2.5 text-xs">
-                    <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
-                    <span className="text-[#141E1A] font-medium font-sans">
-                      &ldquo;Has monsoon rainfall increased over the Indus Basin over the last 20 years?&rdquo;
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-[#F5F6F2] border border-[#DDE3DA] flex items-center gap-2.5 text-xs">
-                    <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
-                    <span className="text-[#141E1A] font-medium font-sans">
-                      &ldquo;Draw a monthly temperature difference chart for this province.&rdquo;
-                    </span>
+                  <div className="p-3 rounded-xl bg-[#F5F6F2] border border-[#DDE3DA] space-y-1 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-[#141E1A]">
+                      <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>7-Day Weather Predictions</span>
+                    </div>
+                    <p className="text-[#65716B] font-sans">
+                      &ldquo;What is the 7-day weather forecast for Paris?&rdquo; or <code className="font-mono text-[#00524B]">/forecast Karachi 7d</code>
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-purple-50/60 border border-purple-100 text-xs text-purple-900">
                   <ShieldCheck className="w-4 h-4 shrink-0 text-purple-700" />
-                  <span><strong>Zero Hallucinations:</strong> The assistant queries the actual climate records and runs real mathematical formulas before answering, ensuring every number is factual.</span>
+                  <span><strong>Grounded Calculations:</strong> The assistant queries actual satellite/reanalysis records and numerical weather prediction models, ensuring every number and trend is factual and verified.</span>
                 </div>
               </div>
             </div>
