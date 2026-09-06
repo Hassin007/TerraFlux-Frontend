@@ -1,10 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAgentStore } from '../../stores/useAgentStore';
 import { useAgentStream } from '../../hooks/useAgentStream';
-import { Send, Sparkles, Loader2, Clock, PlusCircle, AlertCircle, Map, Terminal } from 'lucide-react';
+import { Send, Sparkles, Loader2, Clock, PlusCircle, AlertCircle, Map, Terminal, SunMedium } from 'lucide-react';
 
 const EXAMPLE_MAP_CMD = '/map Karachi precipitation mean 2021-2025';
 const EXAMPLE_MAP_SYNTAX = '/map <location> <variable> <reducer> <dates>';
+
+const EXAMPLE_FORECAST_CMD = '/forecast Karachi 7d';
+const EXAMPLE_FORECAST_SYNTAX = '/forecast <location> [days]';
+
+interface SlashCommandOption {
+  cmd: string;
+  name: string;
+  badge: string;
+  description: string;
+  syntax: string;
+  example: string;
+  icon: React.ReactNode;
+}
 
 export const ChatInputForm: React.FC = () => {
   const [inputVal, setInputVal] = useState('');
@@ -15,17 +28,39 @@ export const ChatInputForm: React.FC = () => {
 
   const isLocked = uiLockState !== 'idle';
 
-  // Determine if slash command autocomplete menu should be visible
-  const isTypingSlash =
-    inputVal.startsWith('/') &&
-    !inputVal.includes(' ') &&
-    !isSlashMenuDismissed &&
-    (inputVal === '/' || '/map'.startsWith(inputVal.toLowerCase()));
+  const slashCommands: SlashCommandOption[] = [
+    {
+      cmd: '/map',
+      name: '/map',
+      badge: 'Interactive WebGIS',
+      description: 'Configure and render a live interactive climate raster & grid layer on the 3D globe.',
+      syntax: EXAMPLE_MAP_SYNTAX,
+      example: EXAMPLE_MAP_CMD,
+      icon: <Map className="w-3.5 h-3.5" />,
+    },
+    {
+      cmd: '/forecast',
+      name: '/forecast',
+      badge: 'Live & 7-Day Outlook',
+      description: 'Retrieve high-resolution weather predictions, extreme alerts, and 24h hourly curves.',
+      syntax: EXAMPLE_FORECAST_SYNTAX,
+      example: EXAMPLE_FORECAST_CMD,
+      icon: <SunMedium className="w-3.5 h-3.5" />,
+    },
+  ];
 
-  // Determine if active command helper banner should be visible
+  // Filter commands matching what user typed
+  const matchingCommands = inputVal.startsWith('/') && !inputVal.includes(' ') && !isSlashMenuDismissed
+    ? slashCommands.filter((c) => c.cmd.toLowerCase().startsWith(inputVal.toLowerCase()))
+    : [];
+
+  const isTypingSlash = matchingCommands.length > 0;
+
+  // Active command helper banner
   const isMapCommandActive = inputVal.trimStart().startsWith('/map');
+  const isForecastCommandActive = inputVal.trimStart().startsWith('/forecast');
 
-  // Reset menu dismissal when user deletes or changes input
+  // Reset menu dismissal when user types '/'
   useEffect(() => {
     if (inputVal === '/') {
       setIsSlashMenuDismissed(false);
@@ -33,13 +68,14 @@ export const ChatInputForm: React.FC = () => {
   }, [inputVal]);
 
   const suggestionChips = [
+    'Weather forecast for Karachi this week',
     'Analyze summer heat trends in Sindh, Pakistan',
     'Evaluate Indus Basin monsoon rainfall changes',
     'Summarize temperature shifts across European Alps',
   ];
 
   const handleSelectSlashCommand = (cmd: string) => {
-    setInputVal(cmd);
+    setInputVal(cmd.endsWith(' ') ? cmd : `${cmd} `);
     setIsSlashMenuDismissed(true);
     textareaRef.current?.focus();
   };
@@ -52,10 +88,10 @@ export const ChatInputForm: React.FC = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (isTypingSlash) {
+    if (isTypingSlash && matchingCommands.length > 0) {
       if (e.key === 'Tab' || e.key === 'Enter') {
         e.preventDefault();
-        handleSelectSlashCommand('/map ');
+        handleSelectSlashCommand(matchingCommands[0].cmd);
         return;
       }
       if (e.key === 'Escape') {
@@ -75,8 +111,8 @@ export const ChatInputForm: React.FC = () => {
     <div className="p-3.5 bg-[#F5F6F2] border-t border-[#DDE3DA] space-y-2 select-none shrink-0 relative">
       {/* 1. Floating Slash Command Autocomplete Menu */}
       {isTypingSlash && (
-        <div className="absolute bottom-full left-3.5 right-3.5 mb-2 bg-white rounded-2xl border border-[#176B63]/40 shadow-xl p-2.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
-          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#DDE3DA]/70 px-1">
+        <div className="absolute bottom-full left-3.5 right-3.5 mb-2 bg-white rounded-2xl border border-[#176B63]/40 shadow-xl p-2.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 max-h-72 overflow-y-auto space-y-2">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#DDE3DA]/70 px-1">
             <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#176B63] font-bold">
               <Terminal className="w-3.5 h-3.5" />
               <span>COMMAND PALETTE</span>
@@ -84,47 +120,50 @@ export const ChatInputForm: React.FC = () => {
             <span className="text-[10px] font-mono text-[#89938D]">Tab / Enter to select • Esc to dismiss</span>
           </div>
 
-          <div
-            onClick={() => handleSelectSlashCommand('/map ')}
-            className="p-2.5 rounded-xl bg-[#F5F6F2] hover:bg-[#EBF6EF] border border-[#DDE3DA] hover:border-[#176B63]/50 cursor-pointer transition-all space-y-1.5 group"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#176B63] text-white flex items-center justify-center font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
-                  <Map className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs text-[#17211D]">/map</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#176B63]/10 text-[#176B63] font-semibold border border-[#176B63]/20">
-                      Interactive WebGIS
-                    </span>
+          {matchingCommands.map((command) => (
+            <div
+              key={command.cmd}
+              onClick={() => handleSelectSlashCommand(command.cmd)}
+              className="p-2.5 rounded-xl bg-[#F5F6F2] hover:bg-[#EBF6EF] border border-[#DDE3DA] hover:border-[#176B63]/50 cursor-pointer transition-all space-y-1.5 group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#176B63] text-white flex items-center justify-center font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
+                    {command.icon}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-xs text-[#17211D]">{command.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#176B63]/10 text-[#176B63] font-semibold border border-[#176B63]/20">
+                        {command.badge}
+                      </span>
+                    </div>
                   </div>
                 </div>
+                <span className="text-[10px] font-mono text-[#176B63] font-bold bg-white px-2 py-0.5 rounded border border-[#DDE3DA] shadow-xs">
+                  Select ↵
+                </span>
               </div>
-              <span className="text-[10px] font-mono text-[#176B63] font-bold bg-white px-2 py-0.5 rounded border border-[#DDE3DA] shadow-xs">
-                Select ↵
-              </span>
-            </div>
 
-            <p className="text-[11px] text-[#65716B] leading-tight pl-8">
-              Configure and render a live interactive climate raster & grid layer on the 3D globe.
-            </p>
+              <p className="text-[11px] text-[#65716B] leading-tight pl-8">
+                {command.description}
+              </p>
 
-            <div className="pl-8 pt-1 space-y-1 text-[10px] font-mono border-t border-[#DDE3DA]/50">
-              <div className="text-[#65716B]">
-                <span className="text-[#89938D]">Syntax:</span> <code className="text-[#17211D] font-medium">{EXAMPLE_MAP_SYNTAX}</code>
-              </div>
-              <div className="text-[#176B63]">
-                <span className="text-[#89938D]">Example:</span> <code className="font-medium">{EXAMPLE_MAP_CMD}</code>
+              <div className="pl-8 pt-1 space-y-1 text-[10px] font-mono border-t border-[#DDE3DA]/50">
+                <div className="text-[#65716B]">
+                  <span className="text-[#89938D]">Syntax:</span> <code className="text-[#17211D] font-medium">{command.syntax}</code>
+                </div>
+                <div className="text-[#176B63]">
+                  <span className="text-[#89938D]">Example:</span> <code className="font-medium">{command.example}</code>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       )}
 
       {/* 2. Active Command Helper Banner with Concrete Example */}
-      {isMapCommandActive && (
+      {isMapCommandActive && !isTypingSlash && (
         <div className="px-3 py-1.5 rounded-xl bg-[#EBF6EF] border border-[#176B63]/30 text-xs text-[#17211D] flex items-center justify-between gap-2 shadow-xs animate-in fade-in">
           <div className="flex items-center gap-2 overflow-hidden text-[11px] font-mono">
             <span className="font-bold text-[#176B63] flex items-center gap-1 shrink-0">
@@ -135,6 +174,25 @@ export const ChatInputForm: React.FC = () => {
           <button
             type="button"
             onClick={() => setInputVal(EXAMPLE_MAP_CMD)}
+            className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-lg bg-white hover:bg-[#176B63] text-[#176B63] hover:text-white border border-[#176B63]/30 transition-colors shrink-0 cursor-pointer shadow-xs"
+            title="Click to fill concrete example query"
+          >
+            Use Example
+          </button>
+        </div>
+      )}
+
+      {isForecastCommandActive && !isTypingSlash && (
+        <div className="px-3 py-1.5 rounded-xl bg-[#EBF6EF] border border-[#176B63]/30 text-xs text-[#17211D] flex items-center justify-between gap-2 shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2 overflow-hidden text-[11px] font-mono">
+            <span className="font-bold text-[#176B63] flex items-center gap-1 shrink-0">
+              <SunMedium className="w-3.5 h-3.5" /> /forecast:
+            </span>
+            <span className="text-[#65716B] truncate">{EXAMPLE_FORECAST_SYNTAX}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setInputVal(EXAMPLE_FORECAST_CMD)}
             className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-lg bg-white hover:bg-[#176B63] text-[#176B63] hover:text-white border border-[#176B63]/30 transition-colors shrink-0 cursor-pointer shadow-xs"
             title="Click to fill concrete example query"
           >
@@ -170,7 +228,7 @@ export const ChatInputForm: React.FC = () => {
       )}
 
       {/* Quick Suggestion Chips on clean/initial conversation */}
-      {activeConversation.messages.length <= 2 && uiLockState === 'idle' && !isMapCommandActive && !isTypingSlash && (
+      {activeConversation.messages.length <= 2 && uiLockState === 'idle' && !isMapCommandActive && !isForecastCommandActive && !isTypingSlash && (
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {suggestionChips.map((chip, idx) => (
             <button
@@ -203,7 +261,7 @@ export const ChatInputForm: React.FC = () => {
               ? 'Daily token quota exhausted until UTC midnight.'
               : uiLockState === 'streaming'
               ? 'Analyzing climate records and generating response...'
-              : 'Ask a question or type /map to render interactive layer...'
+              : 'Ask a question or type /forecast or /map...'
           }
           className="w-full bg-transparent text-xs text-[#17211D] resize-none focus:outline-none placeholder:text-[#89938D] disabled:opacity-60 font-sans"
           id="copilot-input-textarea"

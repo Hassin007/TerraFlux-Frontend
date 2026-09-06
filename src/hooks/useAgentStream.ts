@@ -212,6 +212,7 @@ export function useAgentStream() {
                     content: event.answer,
                     thoughts: event.thoughts || [],
                     figures: event.figures || [],
+                    forecast: event.forecast || undefined,
                     warnings: event.warnings || [],
                   },
                   event.conversation_id,

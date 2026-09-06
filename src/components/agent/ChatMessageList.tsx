@@ -6,6 +6,7 @@ import { ProgressTicker } from './ProgressTicker';
 import { ThinkingAccordion } from './ThinkingAccordion';
 import { ToolStepsAccordion } from './ToolStepsAccordion';
 import { FigureCard } from './FigureCard';
+import { ForecastCard } from './ForecastCard';
 import { GuardrailMessage } from './GuardrailMessage';
 import { User, Copy, Check } from 'lucide-react';
 
@@ -165,6 +166,9 @@ export const ChatMessageList: React.FC = () => {
                 </div>
 
                 <MarkdownContent content={msg.content} />
+
+                {/* Inline Weather Forecast Card */}
+                {msg.forecast && <ForecastCard forecast={msg.forecast} />}
 
                 {/* Inline Synthesized Figures */}
                 {msg.figures &&

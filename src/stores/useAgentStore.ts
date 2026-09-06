@@ -209,6 +209,7 @@ export const useAgentStore = create<AgentState>()(
           content: msg.content || '',
           thoughts: msg.thoughts || [],
           figures: msg.figures || [],
+          forecast: msg.forecast,
           warnings: msg.warnings || [],
           toolSteps: msg.toolSteps || (get().activeToolSteps.length > 0 ? [...get().activeToolSteps] : undefined),
           isGuardrail: msg.isGuardrail || false,

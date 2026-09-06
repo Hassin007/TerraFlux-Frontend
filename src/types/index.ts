@@ -291,6 +291,88 @@ export type MessageRole = 'user' | 'assistant' | 'system';
 export type GuardrailType = 'blocked' | 'token_limit' | 'inactivity_expired' | 'daily_quota_exceeded' | 'error';
 export type EndReason = 'token_limit' | 'inactivity_expired' | 'daily_quota_exceeded';
 
+export interface CurrentWeather {
+  time: string;
+  temperature_2m: number;
+  relative_humidity_2m: number;
+  apparent_temperature: number;
+  is_day: number;
+  precipitation: number;
+  weather_code: number;
+  weather_label: string;
+  weather_severity: 'clear' | 'cloudy' | 'rain' | 'snow' | 'thunderstorm';
+  weather_icon: string;
+  cloud_cover: number;
+  pressure_msl: number;
+  surface_pressure: number;
+  wind_speed_10m: number;
+  wind_direction_10m: number;
+  wind_gusts_10m: number;
+}
+
+export interface DailyForecastDay {
+  date: string;
+  weather_code: number;
+  weather_label: string;
+  weather_icon: string;
+  temperature_2m_max: number;
+  temperature_2m_min: number;
+  apparent_temperature_max: number;
+  apparent_temperature_min: number;
+  precipitation_sum: number;
+  precipitation_hours: number;
+  precipitation_probability_max: number;
+  wind_speed_10m_max: number;
+  wind_gusts_10m_max: number;
+  wind_direction_10m_dominant: number;
+  shortwave_radiation_sum: number;
+  uv_index_max: number;
+}
+
+export interface HourlyForecastHour {
+  time: string;
+  temperature_2m: number;
+  relative_humidity_2m: number;
+  apparent_temperature: number;
+  precipitation_probability: number;
+  precipitation: number;
+  weather_code: number;
+  weather_label: string;
+  weather_icon: string;
+  surface_pressure: number;
+  cloud_cover: number;
+  visibility: number;
+  wind_speed_10m: number;
+  wind_direction_10m: number;
+  uv_index: number;
+  is_day: number;
+}
+
+export interface WeatherAlert {
+  type: string;
+  severity: 'warning' | 'advisory';
+  title: string;
+  description: string;
+}
+
+export interface WeatherForecastData {
+  status: 'ok' | 'error';
+  action: 'weather_forecast';
+  region_name: string;
+  country_code?: string;
+  admin_level?: number;
+  lat: number;
+  lon: number;
+  elevation: number;
+  timezone: string;
+  forecast_days: number;
+  current: CurrentWeather;
+  daily: DailyForecastDay[];
+  hourly: HourlyForecastHour[];
+  alerts: WeatherAlert[];
+  summary: string;
+}
+
 export interface ToolExecutionStep {
   id: string;
   tool: string;
@@ -305,6 +387,7 @@ export interface ChatMessage {
   content: string;
   thoughts?: string[];
   figures?: FigureItem[];
+  forecast?: WeatherForecastData;
   warnings?: string[];
   isGuardrail?: boolean;
   guardrailType?: GuardrailType;
@@ -349,10 +432,14 @@ export interface MapActionPayload {
   bbox?: [number, number, number, number];
   lat?: number;
   lon?: number;
+  country?: string;
   country_code?: string;
+  country_code_2?: string;
+  country_code_3?: string;
   admin_level?: number;
   osm_id?: string | number | null;
   osm_type?: string | null;
+  parent_chain?: string[];
   display_name?: string;
 }
 
@@ -360,6 +447,7 @@ export interface ResultSSEEvent {
   type: 'result';
   answer: string;
   map_action?: MapActionPayload | null;
+  forecast?: WeatherForecastData | null;
   thoughts?: string[];
   figures: FigureItem[];
   warnings: string[];
