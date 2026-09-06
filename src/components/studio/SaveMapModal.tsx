@@ -3,8 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useStudioStore } from '../../stores/useStudioStore';
 import { useClimateStore, computeRainfallBounds } from '../../stores/useClimateStore';
-import { useViewStore } from '../../stores/useViewStore';
-import { exportFigure } from '../../api/figureApi';
+import { exportFigure, downloadBase64Image } from '../../api/figureApi';
 import { PRESET_OPTIONS } from './PresetSelectorGrid';
 import { RainfallScaleMode } from '../../types';
 import {
@@ -50,6 +49,7 @@ export const SaveMapModal: React.FC = () => {
   const [dpi, setDpi] = useState<number>(300);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [downloadSuccessName, setDownloadSuccessName] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [customMin, setCustomMin] = useState<number>(saveMapRequest.vis_min ?? 0);
   const [customMax, setCustomMax] = useState<number>(saveMapRequest.vis_max ?? 800);
@@ -81,6 +81,11 @@ export const SaveMapModal: React.FC = () => {
   const handleDownload = async (fmt: 'png' | 'svg' | 'pdf') => {
     if (!hasRegion) return;
     setIsExporting(true);
+    setErrorMessage(null);
+
+    const cleanRegion = (saveMapRequest.region_name || 'Region').replace(/[^a-zA-Z0-9]/g, '_');
+    const fallbackFilename = `TerraFlux_${cleanRegion}_spatial_map.${fmt}`;
+
     try {
       const filename = await exportFigure({
         ...saveMapRequest,
@@ -90,8 +95,23 @@ export const SaveMapModal: React.FC = () => {
       setDownloadSuccessName(filename);
       setTimeout(() => setDownloadSuccessName(null), 4000);
     } catch (err: any) {
-      console.error('[saveMap] Export error:', err);
-      alert('Map export failed: ' + (err?.message || 'Unknown error'));
+      console.warn('[saveMap] Server export error, attempting client fallback:', err);
+
+      // Resilient fallback for PNG if preview base64 is already rendered on screen
+      if (fmt === 'png' && saveMapPreviewBase64) {
+        try {
+          downloadBase64Image(saveMapPreviewBase64, fallbackFilename);
+          setDownloadSuccessName(fallbackFilename);
+          setTimeout(() => setDownloadSuccessName(null), 4000);
+          return;
+        } catch (clientErr) {
+          console.error('[saveMap] Client fallback failed:', clientErr);
+        }
+      }
+
+      const errMsg = err?.message || 'Map export failed';
+      setErrorMessage(errMsg);
+      setTimeout(() => setErrorMessage(null), 6000);
     } finally {
       setIsExporting(false);
     }
@@ -461,6 +481,14 @@ export const SaveMapModal: React.FC = () => {
             <span className="truncate max-w-xs text-xs font-semibold">
               Downloaded: {downloadSuccessName}
             </span>
+          </div>
+        )}
+
+        {/* Error Toast */}
+        {errorMessage && (
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B94A48] text-white shadow-xl animate-in fade-in zoom-in-95 duration-200 max-w-md">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="truncate text-xs font-semibold">{errorMessage}</span>
           </div>
         )}
       </div>

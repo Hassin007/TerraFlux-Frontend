@@ -2,15 +2,20 @@
 
 import React, { useState } from 'react';
 import { useStudioStore } from '../../stores/useStudioStore';
-import { exportFigure } from '../../api/figureApi';
-import { Download, FileText, CheckCircle2, Loader2 } from 'lucide-react';
+import { exportFigure, downloadBase64Image } from '../../api/figureApi';
+import { Download, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 export const ExportActionToolbar: React.FC = () => {
-  const { request, setDpi, isExporting, setExporting } = useStudioStore();
+  const { request, previewBase64, setDpi, isExporting, setExporting } = useStudioStore();
   const [downloadSuccessName, setDownloadSuccessName] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleExport = async (format: 'png' | 'pdf' | 'svg') => {
     setExporting(true, `Exporting ${format.toUpperCase()}...`);
+    setErrorMessage(null);
+
+    const cleanRegion = (request.region_name || 'Region').replace(/[^a-zA-Z0-9]/g, '_');
+    const fallbackFilename = `TerraFlux_${cleanRegion}_${request.figure_type || 'chart'}.${format}`;
 
     try {
       const downloadedFilename = await exportFigure({
@@ -23,9 +28,25 @@ export const ExportActionToolbar: React.FC = () => {
       setDownloadSuccessName(downloadedFilename);
       setTimeout(() => setDownloadSuccessName(null), 4000);
     } catch (err: any) {
-      console.error('[studio] Export error:', err);
-      alert('Export failed: ' + (err?.message || 'Unknown error'));
+      console.warn('[studio] Server export error, attempting client fallback:', err);
+
+      // Resilient fallback for PNG if preview base64 is already rendered on screen
+      if (format === 'png' && previewBase64) {
+        try {
+          downloadBase64Image(previewBase64, fallbackFilename);
+          setExporting(false, null);
+          setDownloadSuccessName(fallbackFilename);
+          setTimeout(() => setDownloadSuccessName(null), 4000);
+          return;
+        } catch (clientErr) {
+          console.error('[studio] Client fallback failed:', clientErr);
+        }
+      }
+
       setExporting(false, null);
+      const errMsg = err?.message || 'Export failed';
+      setErrorMessage(errMsg);
+      setTimeout(() => setErrorMessage(null), 6000);
     }
   };
 
@@ -85,6 +106,14 @@ export const ExportActionToolbar: React.FC = () => {
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#176B63] text-white shadow-xl animate-in fade-in zoom-in-95 duration-200">
           <CheckCircle2 className="w-4 h-4" />
           <span className="truncate max-w-xs text-xs font-semibold">Downloaded: {downloadSuccessName}</span>
+        </div>
+      )}
+
+      {/* Error Toast */}
+      {errorMessage && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B94A48] text-white shadow-xl animate-in fade-in zoom-in-95 duration-200 max-w-md">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span className="truncate text-xs font-semibold">{errorMessage}</span>
         </div>
       )}
     </div>
